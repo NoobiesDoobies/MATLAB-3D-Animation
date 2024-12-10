@@ -15,22 +15,30 @@ xlabel('x');
 ylabel('y');
 zlabel('z');
 
-% xmin = -2;
-% xmax = 15;
-% ymin = -2;
-% ymax = 10;
-% zmin = 0;
-% zmax = 1.5;
 xmin = -2;
-xmax = 2;
+xmax = 11;
 ymin = -2;
-ymax = 2;
+ymax = 6;
 zmin = 0;
 zmax = 1.5;
+
+% xmin = -2;
+% xmax = 2;
+% ymin = -2;
+% ymax = 2;
+% zmin = 0;
+% zmax = 1.5;
 
 
 axis([xmin xmax ymin ymax zmin zmax]);
 axis manual;
+
+% Create ground plane
+% Create ground plane
+[X, Y] = meshgrid(xmin:0.2:xmax, ymin:0.2:ymax);
+Z = zeros(size(X));
+surface(X, Y, Z, 'FaceColor', [0.8, 0.8, 0.8], 'EdgeColor', 'none', 'FaceAlpha', 0.5);
+
 
 
 
@@ -40,8 +48,8 @@ base_height = 0.5;
 wheel_radius = 0.2;
 wheel_width = 0.1;
 
-[xcylinder ycylinder zcylinder] = cylinder([base_radius]);
-zcylinder = zcylinder * base_height % scale height
+[xcylinder ycylinder zcylinder] = cylinder(base_radius);
+zcylinder = zcylinder * base_height; % scale height
 
 [xwheel, ywheel, zwheel] = cylinder(wheel_radius);
 zwheel = zwheel * wheel_width - wheel_width/2;
@@ -55,8 +63,8 @@ h(1) = surface(xcylinder, ycylinder, zcylinder, ...
     'FaceColor', 'black', 'EdgeColor', 'none');
 
 % Add top and bottom lids using `fill3`
-topLid = fill3(xcylinder(2, :), ycylinder(2, :), zcylinder(2, :), 'blue', 'EdgeColor', 'none'); % Top lid
-bottomLid = fill3(xcylinder(1, :), ycylinder(1, :), zcylinder(1, :), 'blue', 'EdgeColor', 'none'); % Bottom lid
+topLid = fill3(xcylinder(2, :), ycylinder(2, :), zcylinder(2, :), 'black', 'EdgeColor', 'none'); % Top lid
+bottomLid = fill3(xcylinder(1, :), ycylinder(1, :), zcylinder(1, :), 'black', 'EdgeColor', 'none'); % Bottom lid
 
 % wheels
 for i = 1:3
@@ -70,22 +78,33 @@ for i = 1:3
     wheelCoords = rotationY * wheelCoords;
 
     % rotate the wheel to align with its respective angle
-    rot_z = 120 * (i-1);
+    rot_z = 2*pi/3 * (i-1);
     rotationZ = [
         cos(rot_z), -sin(rot_z), 0;
         sin(rot_z), cos(rot_z), 0;
         0, 0, 1
-        ]
+        ];
+    wheelCoords = rotationZ * wheelCoords;
+
+    % Translate wheel into position
+    xWheel = reshape(wheelCoords(1, :), size(xwheel)) + base_radius * cos(rot_z);
+    yWheel = reshape(wheelCoords(2, :), size(ywheel)) + base_radius * sin(rot_z);
+    zWheel = reshape(wheelCoords(3, :), size(zwheel));
+
+    h(1+i) = surface(xWheel, yWheel, zWheel, ...
+        'FaceColor', 'red', 'EdgeColor', 'none');
+    h(4+i) = fill3(xWheel(2,:), yWheel(2,:), zWheel(2,:), 'red', 'EdgeColor', 'none');
+    %h(7+i) = fill3(xWheel(1,:), yWheel(1,:), zWheel(1,:), 'red', 'EdgeColor', 'none');
     
 end
 
 
 % Group objects into hgtransform for animation
 combinedobject = hgtransform('parent', myaxes);
-set([h(1), topLid, bottomLid], 'Parent', combinedobject);
+set([h, topLid, bottomLid], 'Parent', combinedobject);
 drawnow
 
-%% define the motion coordinates
+% define the motion coordinates
 
 
 %load("MPC Mat Data/trajectory_data_5kg.mat");
@@ -93,10 +112,35 @@ load("SMC_Massa10kg.mat");
 
 longitude = y;
 latitude = x;
-altitute = zeros(length(x));
-bearing = zeros(length(x));
 
-plot(x, y)
+
+height_above_ground = wheel_radius;
+altitute = height_above_ground * ones(1,length(x));
+bearing = theta;
+
+% Plot trajectory
+%plot(x,y,'o','MarkerSize',3,'Color',[0,0,0]);
+trail = animatedline('LineWidth', 2, 'Color', 'blue');
+
+% Add shadow
+shadowScale = 0.8; % Scale for the shadow
+shadow = fill3(shadowScale * xcylinder, shadowScale * ycylinder, ...
+               0 * zcylinder, [0.2, 0.2, 0.2], 'EdgeColor', 'none');
+set(shadow, 'Parent', combinedobject);
+
+% Add lighting
+light('Position', [0, 0, 10], 'Style', 'infinite');
+lighting gouraud;
+material shiny; % Makes the surfaces shiny
+title('3D Omni-Wheel Robot Animation');
+xlabel('X-axis');
+ylabel('Y-axis');
+zlabel('Z-axis');
+
+
+arrow = quiver3(latitude(1), longitude(1), height_above_ground+base_height, ...
+    v_x(1), v_y(1), 0, 'r', 'LineWidth', 2, 'MaxHeadSize', 2);
+    
 % Animate using makehgtform
 for i = 1:length(latitude)
 
@@ -104,7 +148,22 @@ for i = 1:length(latitude)
     translation = makehgtform('translate', ...
         [latitude(i) longitude(i) altitute(i)]); % Correct variable name
 
-    set(combinedobject, 'matrix', translation);
+    %set(combinedobject, 'matrix', translation);
+
+    rotation = makehgtform('zrotate', bearing(i));
+    %set(combinedobject, 'matrix', rotation);
+
+    set(combinedobject, 'matrix', ...
+        translation*rotation);
+    addpoints(trail, latitude(i), longitude(i), 0);
+    
+    % Draw velocity arrow
+    arrow = quiver3(latitude(1), longitude(1), height_above_ground+base_height, ...
+    v_x(1), v_y(1), 0, 'r', 'LineWidth', 2, 'MaxHeadSize', 2);
+    
+
+
     pause(0.01);
     disp([i,latitude(i),longitude(i)]);
 end
+

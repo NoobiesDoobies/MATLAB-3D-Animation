@@ -33,6 +33,13 @@ zmax = 1.5;
 axis([xmin xmax ymin ymax zmin zmax]);
 axis manual;
 
+% Create ground plane
+% Create ground plane
+[X, Y] = meshgrid(xmin:0.2:xmax, ymin:0.2:ymax);
+Z = zeros(size(X));
+surface(X, Y, Z, 'FaceColor', [0.8, 0.8, 0.8], 'EdgeColor', 'none', 'FaceAlpha', 0.5);
+
+
 
 
 % generate 3D model
@@ -56,8 +63,8 @@ h(1) = surface(xcylinder, ycylinder, zcylinder, ...
     'FaceColor', 'black', 'EdgeColor', 'none');
 
 % Add top and bottom lids using `fill3`
-topLid = fill3(xcylinder(2, :), ycylinder(2, :), zcylinder(2, :), 'blue', 'EdgeColor', 'none'); % Top lid
-bottomLid = fill3(xcylinder(1, :), ycylinder(1, :), zcylinder(1, :), 'blue', 'EdgeColor', 'none'); % Bottom lid
+topLid = fill3(xcylinder(2, :), ycylinder(2, :), zcylinder(2, :), 'black', 'EdgeColor', 'none'); % Top lid
+bottomLid = fill3(xcylinder(1, :), ycylinder(1, :), zcylinder(1, :), 'black', 'EdgeColor', 'none'); % Bottom lid
 
 % wheels
 for i = 1:3
@@ -106,11 +113,36 @@ load("SMC_Massa10kg.mat");
 longitude = y;
 latitude = x;
 
+
 height_above_ground = wheel_radius;
 altitute = height_above_ground * ones(1,length(x));
 bearing = theta;
 
-plot(x, y)
+% Plot trajectory
+%plot(x,y,'o','MarkerSize',3,'Color',[0,0,0]);
+trail = animatedline('LineWidth', 2, 'Color', 'blue');
+
+% Add shadow
+shadowScale = 0.8; % Scale for the shadow
+shadow = fill3(shadowScale * xcylinder, shadowScale * ycylinder, ...
+               0 * zcylinder, [0.2, 0.2, 0.2], 'EdgeColor', 'none');
+set(shadow, 'Parent', combinedobject);
+
+% Add lighting
+light('Position', [0, 0, 10], 'Style', 'infinite');
+lighting gouraud;
+material shiny; % Makes the surfaces shiny
+title('3D Omni-Wheel Robot Animation');
+xlabel('X-axis');
+ylabel('Y-axis');
+zlabel('Z-axis');
+
+% Add velocity arrow
+arrow_height = height_above_ground + base_height + 0.1;
+max_arrow_length = 10;
+arrow = quiver3(latitude(1), longitude(1), arrow_height, ...
+    v_x(1), v_y(1), 0, 'r', 'LineWidth', 2, 'MaxHeadSize', max_arrow_length);
+    
 % Animate using makehgtform
 for i = 1:length(latitude)
 
@@ -125,7 +157,14 @@ for i = 1:length(latitude)
 
     set(combinedobject, 'matrix', ...
         translation*rotation);
+    addpoints(trail, latitude(i), longitude(i), 0);
+    
+    % Draw velocity arrow
+    set(arrow, 'XData', latitude(i), 'YData', longitude(i), 'ZData', arrow_height, ...
+        'UData', v_x(i), 'VData', v_y(i), 'WData', 0);
 
-    pause(0.01);
-    disp([i,latitude(i),longitude(i)]);
+
+    pause(0.001);
+    %disp([i,latitude(i),longitude(i)]);
 end
+
