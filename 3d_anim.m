@@ -112,13 +112,13 @@ drawnow
 %load("PID_Massa10kg.mat");
 
 % SMC
-load("SMC_Massa1koma5kg.mat");
+%load("SMC_Massa1koma5kg.mat");
 %load("SMC_Massa5kg.mat");
 %load("SMC_Massa10kg.mat");
 
 
 % MPC
-%load("trajectory_data_1koma5kg.mat");
+load("trajectory_data_1koma5kg.mat");
 %load("trajectory_data_5kg.mat");
 %load("trajectory_data_10kg.mat");
 longitude = y;
@@ -184,10 +184,11 @@ traj_x = [x1, x2, x3, x4];
 traj_y = [y1, y2, y3, y4];
 
 
-plot(traj_x, traj_y, 'ro', 'MarkerSize', 1, 'MarkerFaceColor', 'black'); % Starting point
+desired_traj = plot(traj_x, traj_y,  'MarkerSize', 1, 'MarkerFaceColor', 'black'); % Starting point
 
 
-
+legend([desired_traj, trail], {'Desired Trajectory', 'Traced Path'}, ...
+       'Location', 'northeast', 'FontSize', 12);
 % Animate using makehgtform
 for i = 1:length(latitude)
 
