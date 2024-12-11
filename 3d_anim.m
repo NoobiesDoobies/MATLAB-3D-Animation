@@ -107,20 +107,20 @@ drawnow
 % define the motion coordinates
 
 % PID
-%load("PID_Massa1koma5kg.mat");
-%load("PID_Massa5kg.mat");
-%load("PID_Massa10kg.mat");
+%load("data/PID_Massa1koma5kg.mat");
+%load("data/PID_Massa5kg.mat");
+%load("data/PID_Massa10kg.mat");
 
 % SMC
-%load("SMC_Massa1koma5kg_v2.mat");
-load("SMC_Massa5kg_v2.mat");
-%load("SMC_Massa10kg_v2.mat");
+%load("data/SMC_Massa1koma5kg_v2.mat");
+load("data/SMC_Massa5kg_v2.mat");
+%load("data/SMC_Massa10kg_v2.mat");
 
 
 % MPC
-%load("trajectory_data_1koma5kg.mat");
-%load("trajectory_data_5kg.mat");
-%load("trajectory_data_10kg.mat");
+%load("data/trajectory_data_1koma5kg.mat");
+%load("data/trajectory_data_5kg.mat");
+%load("data/trajectory_data_10kg.mat");
 longitude = y;
 latitude = x;
 
