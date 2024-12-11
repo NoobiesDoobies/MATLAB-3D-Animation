@@ -108,7 +108,9 @@ drawnow
 
 
 %load("MPC Mat Data/trajectory_data_5kg.mat");
-load("SMC_Massa10kg.mat");
+% load("SMC_Massa10kg.mat");
+%load("trajectory_data_10kg.mat");
+load("")
 
 longitude = y;
 latitude = x;
@@ -137,9 +139,11 @@ xlabel('X-axis');
 ylabel('Y-axis');
 zlabel('Z-axis');
 
-
-arrow = quiver3(latitude(1), longitude(1), height_above_ground+base_height, ...
-    v_x(1), v_y(1), 0, 'r', 'LineWidth', 2, 'MaxHeadSize', 2);
+% Add velocity arrow
+arrow_height = height_above_ground + base_height + 0.1;
+max_arrow_length = 10;
+arrow = quiver3(latitude(1), longitude(1), arrow_height, ...
+    v_x(1), v_y(1), 0, 'r', 'LineWidth', 2, 'MaxHeadSize', max_arrow_length);
     
 % Animate using makehgtform
 for i = 1:length(latitude)
@@ -158,12 +162,11 @@ for i = 1:length(latitude)
     addpoints(trail, latitude(i), longitude(i), 0);
     
     % Draw velocity arrow
-    arrow = quiver3(latitude(1), longitude(1), height_above_ground+base_height, ...
-    v_x(1), v_y(1), 0, 'r', 'LineWidth', 2, 'MaxHeadSize', 2);
-    
+    set(arrow, 'XData', latitude(i), 'YData', longitude(i), 'ZData', arrow_height, ...
+        'UData', v_x(i), 'VData', v_y(i), 'WData', 0);
 
 
-    pause(0.01);
-    disp([i,latitude(i),longitude(i)]);
+    pause(0.001);
+    %disp([i,latitude(i),longitude(i)]);
 end
 
