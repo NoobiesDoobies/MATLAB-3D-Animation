@@ -1,6 +1,22 @@
 clear;
 clc;
 
+
+% SMC
+data_file_name = "data/SMC_Massa1koma5kg_v2.mat";
+% data_file_name = "data/SMC_Massa5kg_v2.mat";
+% data_file_name = "data/SMC_Massa10kg_v2.mat";
+
+% MPC
+% data_file_name = "data/trajectory_data_1koma5kg.mat";
+% data_file_name = "data/trajectory_data_5kg.mat";
+% data_file_name = "data/trajectory_data_10kg.mat";
+
+% PID
+% data_file_name = "data/PID_Massa1koma5kg.mat";
+% data_file_name = "data/PID_Massa5kg.mat";
+% data_file_name = "data/PID_Massa10kg.mat";
+
 % set axis
 myaxes = axes( ...
     'xlim', [-10, 15], ...
@@ -106,12 +122,7 @@ drawnow
 
 % define the motion coordinates
 
-
-%load("MPC Mat Data/trajectory_data_5kg.mat");
-% load("SMC_Massa10kg.mat");
-%load("trajectory_data_10kg.mat");
-load("")
-
+load(data_file_name);
 longitude = y;
 latitude = x;
 
@@ -144,7 +155,47 @@ arrow_height = height_above_ground + base_height + 0.1;
 max_arrow_length = 10;
 arrow = quiver3(latitude(1), longitude(1), arrow_height, ...
     v_x(1), v_y(1), 0, 'r', 'LineWidth', 2, 'MaxHeadSize', max_arrow_length);
-    
+ 
+
+% Target Trajectory
+% Define rectangle dimensions
+traj_l = 10; % traj_l of the rectangle
+traj_w = 5;   % traj_w of the rectangle
+
+% Define points along the trajectory
+numPoints = 500; % Number of points for each side
+
+% Edge 1: Bottom (from (0,0) to (10,0))
+x1 = linspace(0, traj_l, numPoints);
+y1 = zeros(1, numPoints);
+
+% Edge 2: Right (from (10,0) to (10,5))
+x2 = traj_l * ones(1, numPoints);
+y2 = linspace(0, traj_w, numPoints);
+
+% Edge 3: Top (from (10,5) to (0,5))
+x3 = linspace(traj_l, 0, numPoints);
+y3 = traj_w * ones(1, numPoints);
+
+% Edge 4: Left (from (0,5) to (0,0))
+x4 = zeros(1, numPoints);
+y4 = linspace(traj_w, 0, numPoints);
+
+% Combine all edges to form the trajectory
+traj_x = [x1, x2, x3, x4];
+traj_y = [y1, y2, y3, y4];
+
+
+desired_traj = plot(traj_x, traj_y,  'MarkerSize', 1, 'MarkerFaceColor', 'black'); % Starting point
+
+
+legend([desired_traj, trail], {'Desired Trajectory', 'Traced Path'}, ...
+       'Location', 'northeast', 'FontSize', 12);
+
+% Make videowriter object
+videoFileName = 
+
+
 % Animate using makehgtform
 for i = 1:length(latitude)
 

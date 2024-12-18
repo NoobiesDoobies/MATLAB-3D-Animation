@@ -1,6 +1,26 @@
 clear;
 clc;
 
+animation_speed_multiplier = 50;
+
+% SMC
+% data_file_name = "data/SMC_Massa1koma5kg_v2.mat";
+% data_file_name = "data/SMC_Massa5kg_v2.mat";
+% data_file_name = "data/SMC_Massa10kg_v2.mat";
+
+% MPC
+data_file_name = "data/trajectory_data_1koma5kg.mat";
+% data_file_name = "data/trajectory_data_5kg.mat";
+% data_file_name = "data/trajectory_data_10kg.mat";
+
+% PID
+% data_file_name = "data/PID_Massa1koma5kg.mat";
+% data_file_name = "data/PID_Massa5kg.mat";
+% data_file_name = "data/PID_Massa10kg.mat";
+
+fig = figure('Visible', 'on'); % Create the figure
+set(fig, 'Units', 'normalized', 'OuterPosition', [0 0 1 1]); % Full screen
+
 % set axis
 myaxes = axes( ...
     'xlim', [-10, 15], ...
@@ -106,28 +126,16 @@ drawnow
 
 % define the motion coordinates
 
-% PID
-%load("data/PID_Massa1koma5kg.mat");
-%load("data/PID_Massa5kg.mat");
-%load("data/PID_Massa10kg.mat");
+load(data_file_name);
 
-% SMC
-%load("data/SMC_Massa1koma5kg_v2.mat");
-load("data/SMC_Massa5kg_v2.mat");
-%load("data/SMC_Massa10kg_v2.mat");
-
-
-% MPC
-%load("data/trajectory_data_1koma5kg.mat");
-%load("data/trajectory_data_5kg.mat");
-%load("data/trajectory_data_10kg.mat");
-longitude = y;
-latitude = x;
-
-
+longitude = y(1:animation_speed_multiplier:end);
+latitude = x(1:animation_speed_multiplier: end);
+bearing = theta(1:animation_speed_multiplier:end);
 height_above_ground = wheel_radius;
-altitute = height_above_ground * ones(1,length(x));
-bearing = theta;
+altitute = height_above_ground * ones(1,length(longitude));
+v_x = v_x(1:animation_speed_multiplier:end);
+v_y = v_y(1:animation_speed_multiplier:end);
+
 
 % Plot trajectory
 %plot(x,y,'o','MarkerSize',3,'Color',[0,0,0]);
@@ -189,6 +197,21 @@ desired_traj = plot(traj_x, traj_y,  'MarkerSize', 1, 'MarkerFaceColor', 'black'
 
 legend([desired_traj, trail], {'Desired Trajectory', 'Traced Path'}, ...
        'Location', 'northeast', 'FontSize', 12);
+
+% % Make videowriter object
+% Extract the base file name without path and extension
+[~, name, ~] = fileparts(data_file_name); % 'name' will be 'SMC_Massa1koma5kg_v2'
+
+% Create the video file name
+videoFileName = "result/" + name + ".mp4"; % Append .mp4 extension
+
+%v = VideoWriter(videoFileName, 'MPEG-4'); % Set file name and format
+v = VideoWriter(videoFileName, 'Motion JPEG AVI'); % Alternative format
+
+v.FrameRate = 30; % Set frame rate (30 fps is standard)
+open(v); % Open the video writer object
+
+
 % Animate using makehgtform
 for i = 1:length(latitude)
 
@@ -209,8 +232,17 @@ for i = 1:length(latitude)
     set(arrow, 'XData', latitude(i), 'YData', longitude(i), 'ZData', arrow_height, ...
         'UData', v_x(i), 'VData', v_y(i), 'WData', 0);
 
+    % capture current frame
+    frame = getframe(gcf); % capture the figure
+    writeVideo(v, frame); % write the frame to the video file
 
-    pause(0.001);
+    %pause(0.001);
     %disp([i,latitude(i),longitude(i)]);
 end
+
+% close the video writer
+close(v);
+hold off;
+
+disp(["Animation saved as", videoFileName]);
 
