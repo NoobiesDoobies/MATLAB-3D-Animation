@@ -4,19 +4,21 @@ clc;
 animation_speed_multiplier = 50;
 
 % SMC
-% data_file_name = "data/SMC_Massa1koma5kg_v2.mat";
-% data_file_name = "data/SMC_Massa5kg_v2.mat";
-% data_file_name = "data/SMC_Massa10kg_v2.mat";
+data_file_name = "data/SMC_1koma5kg.mat";
+%data_file_name = "data/SMC_5kg.mat";
+%data_file_name = "data/SMC_10kg.mat";
 
 % MPC
-data_file_name = "data/trajectory_data_1koma5kg.mat";
-% data_file_name = "data/trajectory_data_5kg.mat";
-% data_file_name = "data/trajectory_data_10kg.mat";
+%data_file_name = "data/MPC_1koma5kg.mat";
+%data_file_name = "data/MPC_5kg.mat";
+% data_file_name = "data/MPC_10kg.mat";
 
 % PID
-% data_file_name = "data/PID_Massa1koma5kg.mat";
-% data_file_name = "data/PID_Massa5kg.mat";
-% data_file_name = "data/PID_Massa10kg.mat";
+%data_file_name = "data/PID_1koma5kg.mat";
+%data_file_name = "data/PID_5kg.mat";
+%data_file_name = "data/PID_10kg.mat";
+[~, name, ~] = fileparts(data_file_name); % 'name' will be 'SMC_Massa1koma5kg_v2'
+
 
 fig = figure('Visible', 'on'); % Create the figure
 set(fig, 'Units', 'normalized', 'OuterPosition', [0 0 1 1]); % Full screen
@@ -151,7 +153,7 @@ set(shadow, 'Parent', combinedobject);
 light('Position', [0, 0, 10], 'Style', 'infinite');
 lighting gouraud;
 material shiny; % Makes the surfaces shiny
-title('3D Omni-Wheel Robot Animation');
+title(strrep(name, '_', ' '));
 xlabel('X-axis');
 ylabel('Y-axis');
 zlabel('Z-axis');
@@ -200,10 +202,9 @@ legend([desired_traj, trail], {'Desired Trajectory', 'Traced Path'}, ...
 
 % % Make videowriter object
 % Extract the base file name without path and extension
-[~, name, ~] = fileparts(data_file_name); % 'name' will be 'SMC_Massa1koma5kg_v2'
 
 % Create the video file name
-videoFileName = "result/" + name + ".mp4"; % Append .mp4 extension
+videoFileName = "result/" + name; % Append .mp4 extension
 
 %v = VideoWriter(videoFileName, 'MPEG-4'); % Set file name and format
 v = VideoWriter(videoFileName, 'Motion JPEG AVI'); % Alternative format
